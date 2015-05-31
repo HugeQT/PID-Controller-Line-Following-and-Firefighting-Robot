@@ -1,0 +1,83 @@
+'****************************************************************
+'*  Name    : PID Control.BAS                                   *
+'*  Author  : Quinn Turner, with reference to Philip Vranes     *
+'*  Notice  : Copyright (c) 2015 GNU General Public License     *
+'*          : All Rights Reserved                               *
+'*  Date    : 5/31/2015                                         *
+'*  Version : 1.0                                               *
+'*  Notes   : This program is designed to be used for           * 
+'*            line-following or wall-following robots.          *        
+'****************************************************************
+
+TRISA=%11111111             ///Sensor input
+TRISB=%00000000             ///Motor output
+TRISC=%00000010             ///Sensor output
+TRISD=%00000000             ///Ports D&E unused
+TRISE=%00000000
+
+ADCON1 =%00001110           ///Setting ports for Analog to Digital conversion
+
+DEFINE OSC 20               ///Stating program defines for: Oscillator, AD conversion and Boot Loader 
+Define loader_used 1        ///Not sure which of these I can get rid of
+Define ADC_BITS 8
+DEFINE ADC_SAMPLEUS 50
+
+Define main_surface 20
+Define black_surface 2
+Define midpoint (main_surface+black_surface)/2
+Define Kp 1
+Define Ki 1
+Define Kd 1
+
+forward var byte           
+backward var byte
+rightFwd var byte
+leftFwd Var byte
+forward = %00001010               
+backward = %00000101
+rightFwd = %00000010
+leftFwd = %00001000
+
+adval1 Var byte             /// Light sensor reading
+previous_error var byte
+error var byte
+integral var byte
+derivative var byte
+driveCorrection var byte
+
+Intro:                        ///Introduction routine that turns all outputs off
+portb = %00000000             ///turns motors off
+PAUSE 2000                    ///this routine will last 10 seconds, which is enough time to carefully set bot into the maze
+GOTO Follow                   ///after 10 seconds, the program will access the ?Main? loop
+
+Follow:
+    error = midpoint - adval1
+    integral = integral + error
+    derivative = error - previous_error
+    driveCorrection = Kp*error + Ki*integral + Kd*derivative
+    previous_error = error
+    pause 20
+    goto Follow
+
+Steer:
+    // Steering is done on a -180 to 180 degree range
+    // -180 turns left, turns right, 0 goes straight
+    if(driveCorrection < -90) then
+        portb = rightFwd
+    end if
+    if(driveCorrection < 0 and driveCorrection >= -90) then
+        portb = forward
+    end if
+    if(driveCorrection <= 90 and driveCorrection >=0) then
+        portb = forward
+    end if
+    if(driveCorrection >90) then
+        portb = leftFwd
+    end if
+return
+    
+    
+
+
+
+
