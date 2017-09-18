@@ -1,6 +1,6 @@
 '****************************************************************
 '*  Name    : PID Control.BAS                                   *
-'*  Author  : Quinn Turner, Filip Vranes, Henry Han             *
+'*  Author  : Quinn Turner, with reference to Philip Vranes     *
 '*  Notice  : Copyright (c) 2015 GNU General Public License     *
 '*          : All Rights Reserved                               *
 '*  Date    : 5/31/2015                                         *
@@ -26,8 +26,8 @@ Define main_surface 20
 Define black_surface 2
 Define midpoint (main_surface+black_surface)/2
 Define Kp 1
-Define Ki 1
-Define Kd 1
+Define Ki 0
+Define Kd 0
 
 forward var byte           
 backward var byte
@@ -56,10 +56,6 @@ Follow:
     derivative = error - previous_error
     driveCorrection = Kp*error + Ki*integral + Kd*derivative
     previous_error = error
-    pause 20
-    goto Follow
-
-Steer:
     // Steering is done on a -180 to 180 degree range
     // -180 turns left, turns right, 0 goes straight
     if(driveCorrection < -90) then
@@ -74,6 +70,8 @@ Steer:
     if(driveCorrection >90) then
         portb = leftFwd
     end if
+    pause 20
+    goto Follow
 return
     
     
